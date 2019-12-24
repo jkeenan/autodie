@@ -1,0 +1,35 @@
+name: windows
+
+on:
+  push:
+    branches:
+      - '*'
+    tags-ignore:
+      - '*'
+  pull_request:
+
+jobs:
+  perl:
+    env:
+      PERL_USE_UNSAFE_INC: 0
+      AUTHOR_TESTING: 0
+      AUTOMATED_TESTING: 1
+      RELEASE_TESTING: 0
+
+    runs-on: windows-latest
+
+    strategy:
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@master
+      - name: Set up Perl
+        run: |
+          choco install strawberryperl
+          echo "##[add-path]C:\strawberry\c\bin;C:\strawberry\perl\site\bin;C:\strawberry\perl\bin"
+      - name: perl -V
+        run: perl -V
+      - name: Install Dependencies
+        run: cpanm -n Test::Pod Test::Pod::Coverage Pod::Coverage::TrustPod Test::Kwalitee Import::Into File::Temp IPC::System::Simple
+      - name: prove tests
+        run: prove -wl t/*.t
